@@ -1,0 +1,34 @@
+<html>
+    <head>
+        <title>LNKS.GA</title>
+        <style>
+            body {
+                background-color: black;
+                margin: 0;
+                padding: 0;
+            }
+
+            #command {
+                position: absolute;
+                display: block;
+                border: 1px solid white;
+                font-family: monospace;
+                color: white;
+                top: 50%;
+                left: 50%;
+                width: 74%;
+                margin: -3% 0 0 -37%;
+                padding-top: 3%;
+                padding-bottom: 3%;
+                line-height: 6%;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        {{ url }}
+        <div id="command">
+            curl -X POST -H "Content-Type: application/json" -d "{\"alias\": \"${ALIAS}\", \"link\": \"${LINK}\"}" {{ url }}
+        </div>
+    </body>
+</html>
