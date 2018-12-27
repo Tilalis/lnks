@@ -48,25 +48,50 @@ class LinksDB:
 
             return self._cursor
 
-    def alias(self, alias, link):
+    def alias(self, link, alias=None):
         if not LinksDB._check_url(link):
             return False
 
-        with self:
-            self.execute(
-                "INSERT INTO lnks (id, alias, link) VALUES (NULL, ?, ?)",
-                (alias, link)
+        if alias is None:
+            return self._get(
+                field='alias',
+                parameter='link',
+                argument=link
             )
+
+        with self:
+            try:
+                self.execute(
+                    "INSERT INTO lnks (id, alias, link) VALUES (NULL, ?, ?)",
+                    (alias, link)
+                )
+            except sqlite3.IntegrityError:
+                return False
 
             return True
 
     def link(self, alias):
+        return self._get(
+            field='link',
+            parameter='alias',
+            argument=alias
+        )
+
+    def _get(self, *, field, parameter, argument, default=None):
         with self:
-            cursor = self.execute("SELECT link FROM lnks WHERE alias == ?", (alias, ))
-            result = cursor.fetchone()
+            cursor = self.execute(
+                "SELECT {field} FROM lnks WHERE {parameter} == ?".format(
+                    field=field,
+                    parameter=parameter
+                ),
 
-            if result is not None:
-                (link, ) = result
-                return link
+                (argument, )
+            )
 
-            return None
+            fetched = cursor.fetchone()
+
+            if fetched is not None:
+                (result, ) = fetched
+                return result
+
+            return default

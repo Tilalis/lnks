@@ -28,7 +28,7 @@ def index():
         if link is None or link == "" or alias is None or alias == "":
             return error_response
 
-        success = db.alias(alias, link)
+        success = db.alias(link, alias)
 
         if not success:
             return error_response
@@ -36,7 +36,7 @@ def index():
         return (
             json.dumps({
                 "status": "done",
-                "url": "{base_url}/{alias}".format(
+                "url": "{base_url}{alias}".format(
                     base_url=request.base_url,
                     alias=alias
                 )
@@ -50,17 +50,20 @@ def index():
 
 @links.route("/<alias>", methods=["GET"])
 def resolve(alias):
+    def _response(url, code=302, template='redirect.html'):
+        response = make_response(
+            render_template(template, url=escape(url)),
+            code
+        )
+
+        response.headers['Location'] = link
+
+        return response
+
     link = db.link(alias)
 
     if link is None:
-        return redirect('/')
+        return _response('/')
 
-    response = make_response(
-        render_template('redirect.html', url=escape(link)),
-        302
-    )
-
-    response.headers['Location'] = link
-
-    return response
+    return _response(link)
 
