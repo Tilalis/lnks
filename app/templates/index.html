@@ -1,34 +1,125 @@
 <html>
-    <head>
-        <title>LNKS.GA</title>
-        <style>
-            body {
-                background-color: black;
-                margin: 0;
-                padding: 0;
-            }
+<head>
+    <title>Lnks - URL Shortener</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: white;
+        }
 
-            #command {
-                position: absolute;
-                display: block;
-                border: 1px solid white;
-                font-family: monospace;
-                color: white;
-                top: 50%;
-                left: 50%;
-                width: 74%;
-                margin: -3% 0 0 -37%;
-                padding-top: 3%;
-                padding-bottom: 3%;
-                line-height: 6%;
-                text-align: center;
-            }
-        </style>
-    </head>
-    <body>
-        {{ url }}
-        <div id="command">
-            curl -X POST -H "Content-Type: application/json" -d "{\"alias\": \"${ALIAS}\", \"link\": \"${LINK}\"}" {{ url }}
+        input[type=text] {
+            margin-bottom: 10px;
+        }
+
+        #placeholder {
+            border: none;
+            text-align: right;
+            padding-right: 0;
+            margin-right: 1px;
+        }
+
+        .form-group {
+            margin: 0 0 0 0;
+        }
+
+        form {
+            margin: 0 0 0 0;
+        }
+
+        #link {
+            width: 100%;
+        }
+
+        #main {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md">
+            <div class="container h-100">
+                <div class="row align-items-center h-100">
+                    <div class="col-6 mx-auto">
+                        <div class="card">
+                            <div id="main" class="card-body">
+                                <form id="theform">
+                                    <div class="form-group">
+                                        <div class="form-row">
+                                            <div class="col">
+                                                <input id="placeholder" class="form-control" type="text"
+                                                       placeholder="lnks.ga/ " disabled>
+                                            </div>
+                                            <div id="alias" class="col">
+                                                <input class="form-control" id="_alias" name="alias" type="text" placeholder="alias">
+                                            </div>
+                                        </div>
+                                        <input id="link" name="link" class="form-control" type="text"
+                                               placeholder="URL">
+                                        <button id="gmms" type="button" class="btn btn-block btn-dark">Give Me My Shortlink!
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </body>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
+    (function(w, d, $) {
+        "use strict";
+
+        function createShortLink() {
+            var data = $("#theform").serialize();
+            console.log(data);
+
+
+            $.ajax({
+                type: "POST",
+                url: "/",
+                data: data,
+
+                /* Executes when request finishes */
+                complete: function (xhr, status) {
+                    console.log(xhr);
+                    console.log(status);
+                    if (status !== "success") {
+                        alert("This alias is already taken. Try another one, buddy");
+                        return;
+                    }
+
+                    var alias = $("#_alias");
+                    var value = alias.val();
+                    console.log("Value:" + value);
+                    var link = w.location + value;
+
+                    alias.detach();
+                    $("#main").html(
+                        '<a class="card-link" href=' + link + '><button id="link" class="btn btn-info">' + link + '</button></a>'
+                    );
+                }
+            });
+        }
+
+
+        var button = $("#gmms");
+        button.click(createShortLink);
+
+        $(d).keypress(function (event) {
+             var keyCode = event.keyCode? event.keyCode : event.which;
+
+             if ((keyCode) === 13) {
+                 createShortLink()
+             }
+        });
+
+    }) (window, document, $)
+</script>
+</body>
 </html>

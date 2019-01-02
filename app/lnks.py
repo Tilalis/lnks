@@ -12,8 +12,10 @@ db = LinksDB('lnks.db')
 @links.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        alias = request.json.get('alias')
-        link = request.json.get('link')
+        data = request.form.to_dict(flat=False)
+
+        alias = data.get('alias').pop()
+        link = data.get('link').pop()
 
         if not (link.startswith('http://') or link.startswith('https://')):
             link = 'http://' + link
@@ -48,19 +50,23 @@ def index():
     return render_template('index.html', url=request.base_url)
 
 
-@links.route("/<alias>", methods=["GET"])
+@links.route("/<alias>", methods=["GET", "POST"])
 def resolve(alias):
+    def _redirect(url, code=302, template='redirect.html'):
+        response = make_response(
+            render_template(template, url=escape(url)),
+            code
+        )
+
+        response.headers['Location'] = url
+
+        return response
+
+    alias = alias.replace('/', '')
     link = db.link(alias)
 
     if link is None:
-        return redirect('/')
+        return _redirect('/')
 
-    response = make_response(
-        render_template('redirect.html', url=escape(link)),
-        302
-    )
-
-    response.headers['Location'] = link
-
-    return response
+    return _redirect(link)
 
